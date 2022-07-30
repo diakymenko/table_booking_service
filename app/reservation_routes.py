@@ -1,46 +1,51 @@
-from flask import Blueprint, request, jsonify, make_response, abort
+from app.models.reservation_validation import*
+from sqlalchemy import Date, cast
 
-from app import db
-from app.models.reservation import Reservation
-from app.models.restaurant import Restaurant
 
 reservation_bp = Blueprint('reservations', __name__,
-                           url_prefix="/restaurants/<restaurant_id>/reservations")
+                           url_prefix="/restaurants/<restaurant_id>")
 
 
-@reservation_bp.route("", methods=["POST"])
+@reservation_bp.route("/reservations", methods=["POST"])
 def create_one_reservation_for_a_restaurant(restaurant_id):
-    request_body = request.get_json()
     restaurant = validate_and_return_item(Restaurant, restaurant_id)
+    request_body = request.get_json()
 
-    if "customer_name" not in request_body:
-        return jsonify(
-            {
-                "details": "Please enter a customer name for the reservation!"
-            }), 400
-    if "customer_phone" not in request_body:
-        return jsonify(
-            {
-                "details": "Please enter a customer phone number for the reservation!"
-            }), 400
+    validate_post_request(restaurant_id, request_body)
+
+    reservation_slot = validate_date_and_return_datetime(request_body["timestamp"])
+    reservation_date = dt.date(reservation_slot.year, reservation_slot.month,
+                               reservation_slot.day)
+
+    reservations = Reservation.query.filter(Reservation.restaurant_id == restaurant_id). \
+        filter(cast(Reservation.timestamp, Date) == reservation_date).all()
+
+    slots = get_available_slots(reservations, reservation_slot, restaurant.tables)
+
+
+    is_booking_possible = False
+    for slot in slots:
+        if slot.hour == reservation_slot.hour:
+            is_booking_possible = True
+
+    if is_booking_possible is False:
+        return make_response(jsonify(details=f"No available tables for this time. Please choose another time."),201)
 
     new_reservation = Reservation(
-        customer_name=request_body["customer_name"],
-        customer_phone=request_body["customer_phone"],
-        restaurant_id=restaurant.restaurant_id)
-
-    if "timestamp" in request_body:
-        new_reservation.timestamp = request_body["timestamp"]
+    customer_name=request_body["customer_name"],
+    customer_phone=request_body["customer_phone"],
+    timestamp=reservation_slot,
+    restaurant_id=restaurant.restaurant_id)
 
     db.session.add(new_reservation)
     db.session.commit()
 
     return make_response(jsonify(details=
-        f"Reservation with id #{new_reservation.reservation_id} succesfully created"),
+                f"Reservation with id #{new_reservation.reservation_id} succesfully created"),
                          201)
 
 
-@reservation_bp.route("", methods=["GET"])
+@reservation_bp.route("/reservations", methods=["GET"])
 def get_reservations_for_specific_restaurant(restaurant_id):
     restaurant = validate_and_return_item(Restaurant, restaurant_id)
 
@@ -61,44 +66,34 @@ def get_reservations_for_specific_restaurant(restaurant_id):
         "reservations": response
     }), 200
 
-
-def validate_and_return_item(cls, item_id):
-    try:
-        item_id = int(item_id)
-    except ValueError:
-        abort(make_response(
-            jsonify({"details": f'Invalid data for {cls.cls_name()} with id #{item_id}'})),
-              400)
-    item = cls.query.get(item_id)
-    if item:
-        return item
-    abort(
-        make_response({"details": f'{cls} with id #{item_id} not found'}, 404))
-
-
-@reservation_bp.route("/<reservation_id>", methods=["PATCH"])
-def update_reservation_for_specific_restaurant(restaurant_id, reservation_id):
+@reservation_bp.route("/slots", methods=["GET"])
+def get_available_time_slots_for_one_restaurant(restaurant_id):
     restaurant = validate_and_return_item(Restaurant, restaurant_id)
-    reservation = validate_and_return_item(Reservation, reservation_id)
+    params = request.args
 
-    request_body = request.get_json()
+    reservation_slot = validate_reservation_slot(restaurant_id, params)
+    reservation_date = dt.date(reservation_slot.year, reservation_slot.month,
+                               reservation_slot.day)
 
-    if "timestamp" in request_body:
-        reservation.timestamp = request_body["timestamp"]
-    if "customer_name" in request_body:
-        reservation.customer_name = request_body["customer_name"]
-    if "customer_phone" in request_body:
-        reservation.customer_phone = request_body["customer_phone"]
+    reservations = Reservation.query.filter(
+        Reservation.restaurant_id == restaurant_id). \
+        filter(cast(Reservation.timestamp, Date) == reservation_date).all()
 
-    db.session.commit()
+    slots = get_available_slots(reservations, reservation_slot,
+                                restaurant.tables)
 
-    return make_response(jsonify(details=
-        f"Reservation with id #{reservation.reservation_id} for {restaurant.name} succesfully updated"),
-        201)
+    res = []
+
+    for slot in slots:
+        res.append(
+            slot.__str__()
+        )
+    return make_response(jsonify({f"{restaurant.name}": {"Available slots": res}}), 200)
 
 
-@reservation_bp.route("/<reservation_id>", methods=["DELETE"])
-def delete_one_card(reservation_id, restaurant_id):
+
+@reservation_bp.route("/reservations/<reservation_id>", methods=["DELETE"])
+def delete_one_reservation(reservation_id, restaurant_id):
     reservation = validate_and_return_item(Reservation, reservation_id)
     restaurant = validate_and_return_item(Restaurant, restaurant_id)
 
@@ -106,3 +101,15 @@ def delete_one_card(reservation_id, restaurant_id):
     db.session.commit()
 
     return jsonify(details=f'Deleted reservation with id #{reservation_id} for {restaurant.name}')
+
+
+# @reservation_bp.route("/reservations/test", methods=["GET"])
+# def test(restaurant_id):
+#
+#     reservation_slot = validate_date_and_return_datetime(request.args.get("timestamp"))
+#     reservation_date = dt.date(reservation_slot.year, reservation_slot.month, reservation_slot.day)
+#
+#     res = Reservation.query.filter(Reservation.restaurant_id == restaurant_id).\
+#         filter(cast(Reservation.timestamp, Date) == reservation_date).all()
+#
+#     return make_response(jsonify(count=len(res)), 200)

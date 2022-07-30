@@ -13,11 +13,11 @@ class Restaurant(db.Model):
     def cls_name(cls):
         return "restaurant"
 
-    def to_json(restaurant):
+    def to_json(self):
         return {
-            "restaurant_id": restaurant.restaurant_id,
-            "name": restaurant.name,
-            "address": restaurant.address,
-            "tables": restaurant.tables,
-            "reservations_count": len(restaurant.reservations)
+            "restaurant_id": self.restaurant_id,
+            "name": self.name,
+            "address": self.address,
+            "tables": self.tables,
+            "reservations_count": len(self.reservations)
         }
