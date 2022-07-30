@@ -1,6 +1,5 @@
 from app import db
 
-
 class Restaurant(db.Model):
     restaurant_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String)
