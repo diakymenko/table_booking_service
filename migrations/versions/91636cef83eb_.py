@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: a92a18679f62
+Revision ID: 91636cef83eb
 Revises: 
-Create Date: 2022-07-25 12:20:41.189179
+Create Date: 2022-08-09 13:39:21.216008
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a92a18679f62'
+revision = '91636cef83eb'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,16 +21,19 @@ def upgrade():
     op.create_table('restaurant',
     sa.Column('restaurant_id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(), nullable=True),
+    sa.Column('location', sa.String(), nullable=True),
     sa.Column('address', sa.String(), nullable=True),
     sa.Column('tables', sa.Integer(), nullable=True),
+    sa.Column('yelp_id', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('restaurant_id')
     )
     op.create_table('reservation',
     sa.Column('reservation_id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('timestamp', sa.DateTime(), nullable=True),
-    sa.Column('owner_name', sa.String(), nullable=True),
-    sa.Column('owner_tel', sa.String(), nullable=True),
+    sa.Column('customer_name', sa.String(), nullable=True),
+    sa.Column('customer_phone', sa.String(), nullable=True),
     sa.Column('restaurant_id', sa.Integer(), nullable=True),
+    sa.Column('guests_number', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['restaurant_id'], ['restaurant.restaurant_id'], ),
     sa.PrimaryKeyConstraint('reservation_id')
     )

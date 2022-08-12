@@ -1,5 +1,6 @@
 from app.models.reservation_validation import*
 from sqlalchemy import Date, cast
+from flask import Blueprint, request, jsonify, make_response, abort
 
 
 reservation_bp = Blueprint('reservations', __name__,
@@ -11,7 +12,7 @@ def create_one_reservation_for_a_restaurant(restaurant_id):
     restaurant = validate_and_return_item(Restaurant, restaurant_id)
     request_body = request.get_json()
 
-    validate_post_request(restaurant_id, request_body)
+    validate_post_request(request_body)
 
     reservation_slot = validate_date_and_return_datetime(request_body["timestamp"])
     reservation_date = dt.date(reservation_slot.year, reservation_slot.month,
@@ -29,7 +30,7 @@ def create_one_reservation_for_a_restaurant(restaurant_id):
             is_booking_possible = True
 
     if is_booking_possible is False:
-        return make_response(jsonify(details=f"No available tables for this time. Please choose another time."),201)
+        return make_response(jsonify(details=f"No available tables for this time. Please choose another time."), 400)
 
     new_reservation = Reservation(
     customer_name=request_body["customer_name"],
@@ -71,7 +72,7 @@ def get_available_time_slots_for_one_restaurant(restaurant_id):
     restaurant = validate_and_return_item(Restaurant, restaurant_id)
     params = request.args
 
-    reservation_slot = validate_reservation_slot(restaurant_id, params)
+    reservation_slot = validate_reservation_slot(params)
     reservation_date = dt.date(reservation_slot.year, reservation_slot.month,
                                reservation_slot.day)
 

@@ -13,7 +13,7 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__)
-    CORS(app)
+
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config['CORS_HEADERS'] = 'Content-Type'
 
@@ -33,5 +33,10 @@ def create_app():
 
     from .reservation_routes import reservation_bp
     app.register_blueprint(reservation_bp)
+
+    from .yelp_routes import yelp_bp
+    app.register_blueprint(yelp_bp)
+
+    CORS(app)
 
     return app

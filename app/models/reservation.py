@@ -11,6 +11,7 @@ class Reservation(db.Model):
     customer_phone = db.Column(db.String)
     restaurant_id = db.Column(db.Integer,
                               db.ForeignKey('restaurant.restaurant_id'))
+    guests_number = db.Column(db.Integer)
 
     @classmethod
     def cls_name(cls):
