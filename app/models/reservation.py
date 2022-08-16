@@ -19,7 +19,7 @@ class Reservation(db.Model):
 
     def to_json(self):
         return {
-            "reservation_id":self.reservation_id,
+            "reservation_id": self.reservation_id,
             "timestamp": self.timestamp,
             "customer_name": self.customer_name,
             "customer_phone": self.customer_phone,

@@ -20,11 +20,6 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
         "SQLALCHEMY_DATABASE_URI")
 
-    #app.config["SQLALCHEMY_ECHO"] = True
-
-    # from app.models.restaurant import Restaurant
-    # from app.models.reservation import Reservation
-
     db.init_app(app)
     migrate.init_app(app, db)
 

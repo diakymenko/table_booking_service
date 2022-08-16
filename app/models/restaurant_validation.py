@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify, make_response, abort
 
 from app.models.restaurant import Restaurant
-from app.models.restaurant_validation import*
 
 
 def validate_post_request_and_return_restaurant(request_body):

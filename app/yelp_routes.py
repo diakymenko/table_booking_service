@@ -1,11 +1,12 @@
-from flask import Blueprint, jsonify
+import os
 
 import requests
+from flask import Blueprint, jsonify
 
 yelp_bp = Blueprint('yelp', __name__, url_prefix="/yelp")
 
 YELP_URL = "https://api.yelp.com/v3"
-YELP_KEY = "Bearer JRDYbAT6wkFWpEEtt0HGXf1bibl8lixu6MYbQbMal_n6oC2i9_AKo4lQzx_RXIeN2W0uISGpAsHLwT0jgk2zJs9JZ-1NojqYGo5-XI1E4jjaQMPPx0wfur6KGaryYnYx"
+YELP_KEY = os.environ.get("YELP_KEY")
 
 
 @yelp_bp.route('/', defaults={'path': ''})

@@ -1,7 +1,10 @@
+from app import db
+from app.models.reservation import Reservation
 from app.models.reservation_validation import*
 from sqlalchemy import Date, cast
 from flask import Blueprint, request, jsonify, make_response, abort
 
+from app.models.restaurant import Restaurant
 
 reservation_bp = Blueprint('reservations', __name__,
                            url_prefix="/restaurants/<restaurant_id>")

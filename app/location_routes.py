@@ -1,6 +1,5 @@
-from flask import Blueprint, jsonify, make_response, abort
-
 import requests
+from flask import Blueprint
 
 ip_bp = Blueprint('ip', __name__, url_prefix="/ip")
 IP_URL = "https://api64.ipify.org?format=json"
