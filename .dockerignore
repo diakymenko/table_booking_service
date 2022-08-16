@@ -1,0 +1,4 @@
+migrations/
+venv/
+.pytest_cache/
+.env

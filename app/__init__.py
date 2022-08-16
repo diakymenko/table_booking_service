@@ -37,6 +37,9 @@ def create_app():
     from .yelp_routes import yelp_bp
     app.register_blueprint(yelp_bp)
 
+    from .location_routes import ip_bp
+    app.register_blueprint(ip_bp)
+
     CORS(app)
 
     return app

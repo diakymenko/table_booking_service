@@ -103,14 +103,3 @@ def delete_one_reservation(reservation_id, restaurant_id):
 
     return jsonify(details=f'Deleted reservation with id #{reservation_id} for {restaurant.name}')
 
-
-# @reservation_bp.route("/reservations/test", methods=["GET"])
-# def test(restaurant_id):
-#
-#     reservation_slot = validate_date_and_return_datetime(request.args.get("timestamp"))
-#     reservation_date = dt.date(reservation_slot.year, reservation_slot.month, reservation_slot.day)
-#
-#     res = Reservation.query.filter(Reservation.restaurant_id == restaurant_id).\
-#         filter(cast(Reservation.timestamp, Date) == reservation_date).all()
-#
-#     return make_response(jsonify(count=len(res)), 200)
